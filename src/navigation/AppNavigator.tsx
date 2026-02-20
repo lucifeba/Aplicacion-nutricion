@@ -5,29 +5,29 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
 import { colors } from '../theme';
 
-// Auth screens
-import { LoginScreen } from '../screens/auth/LoginScreen';
-import { RegisterScreen } from '../screens/auth/RegisterScreen';
-import { ForgotPasswordScreen } from '../screens/auth/ForgotPasswordScreen';
-
-// Onboarding
-import { OnboardingScreen } from '../screens/onboarding/OnboardingScreen';
-
-// Client screens
-import { ClientHomeScreen } from '../screens/client/ClientHomeScreen';
-import { ClientChatScreen } from '../screens/client/ClientChatScreen';
-import { TrainingRequestScreen } from '../screens/client/TrainingRequestScreen';
-import { WeeklyFeedbackScreen } from '../screens/client/WeeklyFeedbackScreen';
-import { ExportPDFScreen } from '../screens/client/ExportPDFScreen';
-
-// Admin screens
-import { AdminHomeScreen } from '../screens/admin/AdminHomeScreen';
-import { AdminClientChatScreen } from '../screens/admin/AdminClientChatScreen';
-import { AdminBroadcastScreen } from '../screens/admin/AdminBroadcastScreen';
-import { AdminRequestsScreen } from '../screens/admin/AdminRequestsScreen';
-import { AdminFeedbacksScreen } from '../screens/admin/AdminFeedbacksScreen';
+import LoginScreen from '../screens/auth/LoginScreen';
+import RegisterScreen from '../screens/auth/RegisterScreen';
+import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
+import OnboardingScreen from '../screens/onboarding/OnboardingScreen';
+import ClientHomeScreen from '../screens/client/ClientHomeScreen';
+import ClientChatScreen from '../screens/client/ClientChatScreen';
+import TrainingRequestScreen from '../screens/client/TrainingRequestScreen';
+import WeeklyFeedbackScreen from '../screens/client/WeeklyFeedbackScreen';
+import ExportPDFScreen from '../screens/client/ExportPDFScreen';
+import AdminHomeScreen from '../screens/admin/AdminHomeScreen';
+import AdminClientChatScreen from '../screens/admin/AdminClientChatScreen';
+import AdminBroadcastScreen from '../screens/admin/AdminBroadcastScreen';
+import AdminRequestsScreen from '../screens/admin/AdminRequestsScreen';
+import AdminFeedbacksScreen from '../screens/admin/AdminFeedbacksScreen';
 
 const Stack = createNativeStackNavigator();
+
+const screenOptions = {
+  headerStyle: { backgroundColor: colors.primary },
+  headerTintColor: colors.textLight,
+  headerTitleStyle: { fontWeight: '600' as const },
+  contentStyle: { backgroundColor: colors.background },
+};
 
 function AuthStack() {
   return (
@@ -39,17 +39,19 @@ function AuthStack() {
   );
 }
 
+function OnboardingStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+    </Stack.Navigator>
+  );
+}
+
 function ClientStack() {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: colors.primary },
-        headerTintColor: colors.textLight,
-        headerTitleStyle: { fontWeight: '600' },
-      }}
-    >
-      <Stack.Screen name="ClientHome" component={ClientHomeScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="ClientChat" component={ClientChatScreen} options={{ headerShown: false }} />
+    <Stack.Navigator screenOptions={screenOptions}>
+      <Stack.Screen name="Home" component={ClientHomeScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Chat" component={ClientChatScreen} options={{ title: 'Mi Entrenador' }} />
       <Stack.Screen name="TrainingRequest" component={TrainingRequestScreen} options={{ title: 'Modificar Entrenamiento' }} />
       <Stack.Screen name="WeeklyFeedback" component={WeeklyFeedbackScreen} options={{ title: 'Feedback Semanal' }} />
       <Stack.Screen name="ExportPDF" component={ExportPDFScreen} options={{ title: 'Exportar Historial' }} />
@@ -59,23 +61,17 @@ function ClientStack() {
 
 function AdminStack() {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: colors.primary },
-        headerTintColor: colors.textLight,
-        headerTitleStyle: { fontWeight: '600' },
-      }}
-    >
+    <Stack.Navigator screenOptions={screenOptions}>
       <Stack.Screen name="AdminHome" component={AdminHomeScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="AdminClientChat" component={AdminClientChatScreen as any} options={{ headerShown: false }} />
-      <Stack.Screen name="AdminBroadcast" component={AdminBroadcastScreen} options={{ title: 'Mensaje de Difusión' }} />
-      <Stack.Screen name="AdminRequests" component={AdminRequestsScreen} options={{ title: 'Solicitudes' }} />
-      <Stack.Screen name="AdminFeedbacks" component={AdminFeedbacksScreen} options={{ title: 'Feedbacks' }} />
+      <Stack.Screen name="ClientChat" component={AdminClientChatScreen} options={{ title: 'Chat con Cliente' }} />
+      <Stack.Screen name="Broadcast" component={AdminBroadcastScreen} options={{ title: 'Difusión' }} />
+      <Stack.Screen name="Requests" component={AdminRequestsScreen} options={{ title: 'Solicitudes' }} />
+      <Stack.Screen name="Feedbacks" component={AdminFeedbacksScreen} options={{ title: 'Feedbacks' }} />
     </Stack.Navigator>
   );
 }
 
-export function AppNavigator() {
+export default function AppNavigator() {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
@@ -90,12 +86,10 @@ export function AppNavigator() {
     <NavigationContainer>
       {!user ? (
         <AuthStack />
-      ) : user.role === 'client' && !user.onboardingCompleted ? (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-        </Stack.Navigator>
       ) : user.role === 'admin' ? (
         <AdminStack />
+      ) : !user.onboardingCompleted ? (
+        <OnboardingStack />
       ) : (
         <ClientStack />
       )}

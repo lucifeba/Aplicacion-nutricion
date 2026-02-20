@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { colors, borderRadius, fontSize, spacing } from '../theme';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { colors, spacing, fontSize } from '../theme';
 
 interface SliderInputProps {
   label: string;
@@ -10,20 +10,20 @@ interface SliderInputProps {
   max?: number;
 }
 
-export function SliderInput({ label, value, onChange, min = 1, max = 10 }: SliderInputProps) {
-  const values = Array.from({ length: max - min + 1 }, (_, i) => min + i);
+export default function SliderInput({ label, value, onChange, min = 1, max = 10 }: SliderInputProps) {
+  const dots = Array.from({ length: max - min + 1 }, (_, i) => min + i);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}: <Text style={styles.value}>{value}/{max}</Text></Text>
-      <View style={styles.buttonsRow}>
-        {values.map(v => (
+      <Text style={styles.label}>{label} <Text style={styles.valueText}>{value}/{max}</Text></Text>
+      <View style={styles.dotsContainer}>
+        {dots.map(dot => (
           <TouchableOpacity
-            key={v}
-            style={[styles.button, v === value && styles.buttonActive]}
-            onPress={() => onChange(v)}
+            key={dot}
+            onPress={() => onChange(dot)}
+            style={[styles.dot, dot === value && styles.dotActive]}
           >
-            <Text style={[styles.buttonText, v === value && styles.buttonTextActive]}>{v}</Text>
+            <Text style={[styles.dotText, dot === value && styles.dotTextActive]}>{dot}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -32,42 +32,21 @@ export function SliderInput({ label, value, onChange, min = 1, max = 10 }: Slide
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: spacing.lg,
-  },
-  label: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-    fontWeight: '500',
-  },
-  value: {
-    color: colors.primary,
-    fontWeight: '700',
-  },
-  buttonsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  button: {
+  container: { marginBottom: spacing.lg },
+  label: { fontSize: fontSize.sm, color: colors.textSecondary, marginBottom: spacing.sm, fontWeight: '500' },
+  valueText: { color: colors.primary, fontWeight: '700' },
+  dotsContainer: { flexDirection: 'row', justifyContent: 'space-between' },
+  dot: {
     width: 32,
     height: 32,
-    borderRadius: borderRadius.full,
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    borderRadius: 16,
+    backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  buttonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  buttonText: {
-    fontSize: fontSize.xs,
-    color: colors.textSecondary,
-  },
-  buttonTextActive: {
-    color: colors.textLight,
-    fontWeight: '700',
-  },
+  dotActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  dotText: { fontSize: fontSize.xs, color: colors.textSecondary, fontWeight: '600' },
+  dotTextActive: { color: colors.textLight },
 });

@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Button } from '../../components/Button';
-import { Input } from '../../components/Input';
-import { SliderInput } from '../../components/SliderInput';
-import { SuccessModal } from '../../components/SuccessModal';
-import { colors, fontSize, spacing } from '../../theme';
-import { Ionicons } from '@expo/vector-icons';
+import { colors, spacing, fontSize, fontWeight, borderRadius } from '../../theme';
+import Input from '../../components/Input';
+import Button from '../../components/Button';
+import Card from '../../components/Card';
+import SliderInput from '../../components/SliderInput';
+import SuccessModal from '../../components/SuccessModal';
 
-export function WeeklyFeedbackScreen() {
+export default function WeeklyFeedbackScreen({ navigation }: any) {
   const { user } = useAuth();
-  const { submitFeedback, getClientFeedbacks } = useData();
+  const { getClientFeedbacks, submitFeedback } = useData();
+  const clientFeedbacks = getClientFeedbacks(user?.id || '');
+  const weekNumber = clientFeedbacks.length + 1;
+
   const [trainingAdherence, setTrainingAdherence] = useState(5);
   const [nutritionAdherence, setNutritionAdherence] = useState(5);
   const [energyLevel, setEnergyLevel] = useState(5);
@@ -21,102 +25,84 @@ export function WeeklyFeedbackScreen() {
   const [bodyMeasurements, setBodyMeasurements] = useState('');
   const [difficulties, setDifficulties] = useState('');
   const [achievements, setAchievements] = useState('');
-  const [questionsForCoach, setQuestionsForCoach] = useState('');
   const [overallFeeling, setOverallFeeling] = useState('');
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [questionsForCoach, setQuestionsForCoach] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  const weekNumber = user ? getClientFeedbacks(user.id).length + 1 : 1;
+  const canSubmit = difficulties.trim() && overallFeeling.trim();
 
-  async function handleSubmit() {
-    if (!difficulties.trim() || !overallFeeling.trim()) return;
+  const handleSubmit = async () => {
+    if (!user || !canSubmit) return;
     setLoading(true);
-    submitFeedback({
-      clientId: user!.id,
-      clientName: user!.name,
+    await submitFeedback({
+      clientId: user.id,
+      clientName: user.name,
       weekNumber,
       trainingAdherence,
       nutritionAdherence,
       energyLevel,
       sleepQuality,
       stressLevel,
-      weight: weight ? parseFloat(weight) : undefined,
+      weight: weight.trim() || undefined,
       bodyMeasurements: bodyMeasurements.trim() || undefined,
       difficulties: difficulties.trim(),
-      achievements: achievements.trim(),
-      questionsForCoach: questionsForCoach.trim(),
+      achievements: achievements.trim() || undefined,
       overallFeeling: overallFeeling.trim(),
+      questionsForCoach: questionsForCoach.trim() || undefined,
     });
     setLoading(false);
     setShowSuccess(true);
-  }
-
-  function resetForm() {
-    setTrainingAdherence(5);
-    setNutritionAdherence(5);
-    setEnergyLevel(5);
-    setSleepQuality(5);
-    setStressLevel(5);
-    setWeight('');
-    setBodyMeasurements('');
-    setDifficulties('');
-    setAchievements('');
-    setQuestionsForCoach('');
-    setOverallFeeling('');
-    setShowSuccess(false);
-  }
+  };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <View style={styles.header}>
-        <Ionicons name="clipboard" size={32} color={colors.success} />
-        <Text style={styles.title}>Feedback Semanal</Text>
-        <Text style={styles.subtitle}>Semana {weekNumber} - Cuéntanos cómo ha ido tu semana</Text>
-      </View>
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Card style={styles.weekCard}>
+          <View style={styles.weekRow}>
+            <Ionicons name="calendar" size={24} color={colors.secondary} />
+            <Text style={styles.weekText}>Semana {weekNumber}</Text>
+          </View>
+        </Card>
 
-      <Text style={styles.sectionTitle}>Valoraciones</Text>
+        <Text style={styles.sectionTitle}>Valoraciones (1-10)</Text>
+        <Card>
+          <SliderInput label="Adherencia al entrenamiento" value={trainingAdherence} onChange={setTrainingAdherence} />
+          <SliderInput label="Adherencia a la nutrición" value={nutritionAdherence} onChange={setNutritionAdherence} />
+          <SliderInput label="Nivel de energía" value={energyLevel} onChange={setEnergyLevel} />
+          <SliderInput label="Calidad del sueño" value={sleepQuality} onChange={setSleepQuality} />
+          <SliderInput label="Nivel de estrés" value={stressLevel} onChange={setStressLevel} />
+        </Card>
 
-      <SliderInput label="Adherencia al entrenamiento" value={trainingAdherence} onChange={setTrainingAdherence} />
-      <SliderInput label="Adherencia a la nutrición" value={nutritionAdherence} onChange={setNutritionAdherence} />
-      <SliderInput label="Nivel de energía" value={energyLevel} onChange={setEnergyLevel} />
-      <SliderInput label="Calidad de sueño" value={sleepQuality} onChange={setSleepQuality} />
-      <SliderInput label="Nivel de estrés" value={stressLevel} onChange={setStressLevel} />
+        <Text style={styles.sectionTitle}>Medidas (opcional)</Text>
+        <Input label="Peso (kg)" value={weight} onChangeText={setWeight} keyboardType="numeric" placeholder="Ej: 75.5" />
+        <Input label="Medidas corporales" value={bodyMeasurements} onChangeText={setBodyMeasurements} placeholder="Ej: Cintura 80cm, Pecho 100cm..." multiline />
 
-      <Text style={styles.sectionTitle}>Medidas (opcional)</Text>
+        <Text style={styles.sectionTitle}>Reflexión semanal</Text>
+        <Input label="Dificultades encontradas *" value={difficulties} onChangeText={setDifficulties} placeholder="¿Qué te ha costado más esta semana?" multiline numberOfLines={3} />
+        <Input label="Logros de la semana" value={achievements} onChangeText={setAchievements} placeholder="¿De qué estás orgulloso/a?" multiline numberOfLines={3} />
+        <Input label="Sensación general *" value={overallFeeling} onChangeText={setOverallFeeling} placeholder="¿Cómo te has sentido en general?" multiline numberOfLines={2} />
+        <Input label="Preguntas para tu entrenador" value={questionsForCoach} onChangeText={setQuestionsForCoach} placeholder="¿Tienes alguna duda?" multiline numberOfLines={2} />
 
-      <Input label="Peso actual (kg)" value={weight} onChangeText={setWeight} placeholder="Ej: 74.5" keyboardType="decimal-pad" />
-      <Input label="Medidas corporales" value={bodyMeasurements} onChangeText={setBodyMeasurements} placeholder="Ej: Cintura: 82cm, Pecho: 100cm..." multiline style={{ minHeight: 60, textAlignVertical: 'top' }} />
-
-      <Text style={styles.sectionTitle}>Reflexión semanal</Text>
-
-      <Input label="Dificultades encontradas *" value={difficulties} onChangeText={setDifficulties} placeholder="¿Qué te ha costado más esta semana?" multiline numberOfLines={3} style={{ minHeight: 80, textAlignVertical: 'top' }} />
-      <Input label="Logros de la semana" value={achievements} onChangeText={setAchievements} placeholder="¿Qué has conseguido esta semana?" multiline numberOfLines={3} style={{ minHeight: 80, textAlignVertical: 'top' }} />
-      <Input label="Sensación general *" value={overallFeeling} onChangeText={setOverallFeeling} placeholder="¿Cómo te sientes en general?" multiline numberOfLines={2} style={{ minHeight: 60, textAlignVertical: 'top' }} />
-      <Input label="Preguntas para tu entrenador" value={questionsForCoach} onChangeText={setQuestionsForCoach} placeholder="¿Tienes alguna duda?" multiline numberOfLines={3} style={{ minHeight: 80, textAlignVertical: 'top' }} />
-
-      <Button
-        title="Enviar Feedback"
-        onPress={handleSubmit}
-        loading={loading}
-        disabled={!difficulties.trim() || !overallFeeling.trim()}
-        variant="secondary"
-      />
+        <Button title="Enviar Feedback" onPress={handleSubmit} loading={loading} disabled={!canSubmit} fullWidth variant="secondary" />
+      </ScrollView>
 
       <SuccessModal
         visible={showSuccess}
         title="¡Feedback Enviado!"
-        message="Tu feedback semanal ha sido enviado correctamente. Tu entrenador lo revisará pronto."
-        onClose={resetForm}
+        message={`Tu feedback de la semana ${weekNumber} ha sido enviado correctamente. Tu entrenador lo revisará pronto.`}
+        onClose={() => { setShowSuccess(false); navigation.goBack(); }}
       />
-    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
-  header: { alignItems: 'center', marginBottom: spacing.xl },
-  title: { fontSize: fontSize.xl, fontWeight: '700', color: colors.text, marginTop: spacing.sm },
-  subtitle: { fontSize: fontSize.sm, color: colors.textSecondary, textAlign: 'center', marginTop: spacing.xs },
-  sectionTitle: { fontSize: fontSize.lg, fontWeight: '700', color: colors.primary, marginTop: spacing.md, marginBottom: spacing.md },
+  weekCard: { marginBottom: spacing.lg, backgroundColor: colors.primary },
+  weekRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, justifyContent: 'center' },
+  weekText: { fontSize: fontSize.lg, fontWeight: fontWeight.bold, color: colors.textLight },
+  sectionTitle: { fontSize: fontSize.lg, fontWeight: fontWeight.bold, color: colors.text, marginTop: spacing.lg, marginBottom: spacing.md },
 });

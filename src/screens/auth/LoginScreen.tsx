@@ -1,86 +1,43 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
-import { Button } from '../../components/Button';
-import { Input } from '../../components/Input';
-import { colors, fontSize, spacing, borderRadius } from '../../theme';
+import { colors, spacing, fontSize, fontWeight, borderRadius } from '../../theme';
+import Input from '../../components/Input';
+import Button from '../../components/Button';
 
-type Props = {
-  navigation: NativeStackNavigationProp<any>;
-};
-
-export function LoginScreen({ navigation }: Props) {
+export default function LoginScreen({ navigation }: any) {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function handleLogin() {
-    if (!email.trim() || !password.trim()) {
-      setError('Por favor completa todos los campos');
-      return;
-    }
+  const handleLogin = async () => {
+    if (!email || !password) { setError('Completa todos los campos'); return; }
     setError('');
     setLoading(true);
-    const result = await login(email.trim(), password);
+    const result = await login(email, password);
     setLoading(false);
-    if (!result.success) {
-      setError(result.error || 'Error al iniciar sesión');
-    }
-  }
+    if (!result.success) setError(result.error || 'Error al iniciar sesión');
+  };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>APD</Text>
-            <Text style={styles.logoSubtext}>SPORT</Text>
-          </View>
+          <Text style={styles.brand}>APD</Text>
+          <Text style={styles.brandAccent}>SPORT</Text>
           <Text style={styles.subtitle}>Nutrición & Entrenamiento</Text>
         </View>
 
         <View style={styles.form}>
-          <Input
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            placeholder="tu@email.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <Input
-            label="Contraseña"
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Tu contraseña"
-            isPassword
-          />
-
+          <Text style={styles.title}>Iniciar Sesión</Text>
           {error ? <Text style={styles.error}>{error}</Text> : null}
-
-          <Button title="Iniciar Sesión" onPress={handleLogin} loading={loading} />
-
-          <Button
-            title="¿Olvidaste tu contraseña?"
-            onPress={() => navigation.navigate('ForgotPassword')}
-            variant="ghost"
-            style={{ marginTop: spacing.sm }}
-          />
-
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>o</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <Button
-            title="Crear cuenta nueva"
-            onPress={() => navigation.navigate('Register')}
-            variant="outline"
-          />
+          <Input label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" placeholder="tu@email.com" />
+          <Input label="Contraseña" value={password} onChangeText={setPassword} isPassword placeholder="••••••••" />
+          <Button title="Entrar" onPress={handleLogin} loading={loading} fullWidth />
+          <Button title="¿Olvidaste tu contraseña?" onPress={() => navigation.navigate('ForgotPassword')} variant="ghost" fullWidth />
+          <Button title="Crear cuenta" onPress={() => navigation.navigate('Register')} variant="outline" fullWidth />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -88,67 +45,13 @@ export function LoginScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  scroll: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: spacing.lg,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing.xxl,
-  },
-  logoContainer: {
-    backgroundColor: colors.primary,
-    width: 100,
-    height: 100,
-    borderRadius: borderRadius.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  logoText: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: colors.secondary,
-    letterSpacing: 2,
-  },
-  logoSubtext: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textLight,
-    letterSpacing: 4,
-  },
-  subtitle: {
-    fontSize: fontSize.lg,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  form: {
-    width: '100%',
-  },
-  error: {
-    color: colors.error,
-    fontSize: fontSize.sm,
-    textAlign: 'center',
-    marginBottom: spacing.md,
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: spacing.lg,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.border,
-  },
-  dividerText: {
-    marginHorizontal: spacing.md,
-    color: colors.textSecondary,
-    fontSize: fontSize.sm,
-  },
+  flex: { flex: 1, backgroundColor: colors.background },
+  scroll: { flexGrow: 1, justifyContent: 'center', padding: spacing.lg },
+  header: { alignItems: 'center', marginBottom: spacing.xl, backgroundColor: colors.primary, padding: spacing.xl, borderRadius: borderRadius.xl },
+  brand: { fontSize: fontSize.title, fontWeight: fontWeight.bold, color: colors.textLight },
+  brandAccent: { fontSize: fontSize.xxl, fontWeight: fontWeight.bold, color: colors.secondary },
+  subtitle: { fontSize: fontSize.sm, color: colors.secondaryLight, marginTop: spacing.xs },
+  form: { gap: spacing.sm },
+  title: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: colors.text, marginBottom: spacing.md, textAlign: 'center' },
+  error: { backgroundColor: '#FDEDEE', color: colors.error, padding: spacing.md, borderRadius: borderRadius.sm, textAlign: 'center', fontSize: fontSize.sm },
 });

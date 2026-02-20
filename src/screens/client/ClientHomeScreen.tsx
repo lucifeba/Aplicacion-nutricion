@@ -1,104 +1,87 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Card } from '../../components/Card';
-import { colors, fontSize, spacing, borderRadius } from '../../theme';
-
-type Props = {
-  navigation: NativeStackNavigationProp<any>;
-};
+import { colors, spacing, fontSize, fontWeight, borderRadius } from '../../theme';
+import Card from '../../components/Card';
 
 const MENU_ITEMS = [
-  { id: 'chat', title: 'Mensajería', subtitle: 'Chat con tu entrenador', icon: 'chatbubbles', color: colors.accent, screen: 'ClientChat' },
-  { id: 'training', title: 'Modificar Entrenamiento', subtitle: 'Solicita cambios en tu rutina', icon: 'barbell', color: colors.secondary, screen: 'TrainingRequest' },
-  { id: 'feedback', title: 'Feedback Semanal', subtitle: 'Envía tu progreso semanal', icon: 'clipboard', color: colors.success, screen: 'WeeklyFeedback' },
+  { key: 'Chat', title: 'Mensajería', subtitle: 'Chatea con tu entrenador', icon: 'chatbubbles' as const, color: colors.accent },
+  { key: 'TrainingRequest', title: 'Modificar Entrenamiento', subtitle: 'Solicita cambios en tu rutina', icon: 'barbell' as const, color: colors.secondary },
+  { key: 'WeeklyFeedback', title: 'Feedback Semanal', subtitle: 'Envía tu progreso semanal', icon: 'stats-chart' as const, color: colors.success },
+  { key: 'ExportPDF', title: 'Exportar Historial', subtitle: 'Descarga tu progreso en PDF', icon: 'document-text' as const, color: colors.info },
 ];
 
-export function ClientHomeScreen({ navigation }: Props) {
+export default function ClientHomeScreen({ navigation }: any) {
   const { user, logout } = useAuth();
   const { unreadCount } = useData();
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Hola,</Text>
-          <Text style={styles.name}>{user?.name}</Text>
+          <Text style={styles.greeting}>Hola, {user?.name?.split(' ')[0]}</Text>
+          <Text style={styles.headerSubtitle}>Bienvenido a APD Sport</Text>
         </View>
-        <TouchableOpacity onPress={logout} style={styles.logoutBtn}>
+        <TouchableOpacity onPress={logout} style={styles.logoutButton}>
           <Ionicons name="log-out-outline" size={24} color={colors.textLight} />
         </TouchableOpacity>
       </View>
 
-      {unreadCount > 0 && (
-        <Card style={styles.notificationBanner}>
-          <View style={styles.notificationRow}>
-            <Ionicons name="notifications" size={22} color={colors.secondary} />
-            <Text style={styles.notificationText}>Tienes {unreadCount} notificación{unreadCount > 1 ? 'es' : ''} nueva{unreadCount > 1 ? 's' : ''}</Text>
-          </View>
-        </Card>
-      )}
-
-      <Text style={styles.sectionTitle}>¿Qué quieres hacer?</Text>
-
-      {MENU_ITEMS.map(item => (
-        <TouchableOpacity key={item.id} onPress={() => navigation.navigate(item.screen)} activeOpacity={0.7}>
-          <Card style={styles.menuCard}>
-            <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
-              <Ionicons name={item.icon as any} size={28} color={colors.textLight} />
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {unreadCount > 0 && (
+          <Card style={styles.alertCard}>
+            <View style={styles.alertRow}>
+              <Ionicons name="notifications" size={20} color={colors.secondary} />
+              <Text style={styles.alertText}>Tienes {unreadCount} notificación{unreadCount > 1 ? 'es' : ''} sin leer</Text>
             </View>
-            <View style={styles.menuTextContainer}>
-              <Text style={styles.menuTitle}>{item.title}</Text>
-              <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={22} color={colors.border} />
           </Card>
-        </TouchableOpacity>
-      ))}
+        )}
 
-      <TouchableOpacity onPress={() => navigation.navigate('ExportPDF')} activeOpacity={0.7}>
-        <Card style={{ flexDirection: 'row' as const, alignItems: 'center' as const, marginHorizontal: spacing.lg, marginBottom: spacing.md, marginTop: spacing.lg, backgroundColor: colors.surface, borderRadius: 16, padding: spacing.lg, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3 }}>
-          <View style={[styles.iconContainer, { backgroundColor: colors.info }]}>
-            <Ionicons name="document-text" size={28} color={colors.textLight} />
-          </View>
-          <View style={styles.menuTextContainer}>
-            <Text style={styles.menuTitle}>Exportar Historial</Text>
-            <Text style={styles.menuSubtitle}>Descarga tu progreso en PDF</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={22} color={colors.border} />
-        </Card>
-      </TouchableOpacity>
-    </ScrollView>
+        {MENU_ITEMS.map(item => (
+          <TouchableOpacity key={item.key} onPress={() => navigation.navigate(item.key)} activeOpacity={0.7}>
+            <Card style={styles.menuCard}>
+              <View style={styles.menuRow}>
+                <View style={[styles.iconContainer, { backgroundColor: item.color + '15' }]}>
+                  <Ionicons name={item.icon} size={28} color={item.color} />
+                </View>
+                <View style={styles.menuText}>
+                  <Text style={styles.menuTitle}>{item.title}</Text>
+                  <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={22} color={colors.disabled} />
+              </View>
+            </Card>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { paddingBottom: spacing.xxl },
   header: {
     backgroundColor: colors.primary,
     paddingTop: 60,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.lg,
     paddingHorizontal: spacing.lg,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    borderBottomLeftRadius: borderRadius.xl,
-    borderBottomRightRadius: borderRadius.xl,
+    alignItems: 'center',
   },
-  greeting: { fontSize: fontSize.md, color: colors.secondaryLight },
-  name: { fontSize: fontSize.xxl, fontWeight: '700', color: colors.textLight },
-  logoutBtn: { padding: spacing.sm },
-  notificationBanner: { marginHorizontal: spacing.lg, marginTop: spacing.md, backgroundColor: colors.primary },
-  notificationRow: { flexDirection: 'row', alignItems: 'center' },
-  notificationText: { color: colors.textLight, marginLeft: spacing.sm, fontSize: fontSize.sm, fontWeight: '500' },
-  sectionTitle: { fontSize: fontSize.lg, fontWeight: '700', color: colors.text, marginHorizontal: spacing.lg, marginTop: spacing.xl, marginBottom: spacing.md },
-  menuCard: { flexDirection: 'row', alignItems: 'center', marginHorizontal: spacing.lg, marginBottom: spacing.md },
+  greeting: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: colors.textLight },
+  headerSubtitle: { fontSize: fontSize.sm, color: colors.secondaryLight, marginTop: 2 },
+  logoutButton: { padding: spacing.sm },
+  content: { flex: 1, padding: spacing.lg },
+  alertCard: { marginBottom: spacing.md, backgroundColor: '#FFF8E8', borderLeftWidth: 4, borderLeftColor: colors.secondary },
+  alertRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  alertText: { fontSize: fontSize.sm, color: colors.text, fontWeight: fontWeight.medium, flex: 1 },
+  menuCard: { marginBottom: spacing.md },
+  menuRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   iconContainer: { width: 52, height: 52, borderRadius: borderRadius.md, alignItems: 'center', justifyContent: 'center' },
-  menuTextContainer: { flex: 1, marginLeft: spacing.md },
-  menuTitle: { fontSize: fontSize.md, fontWeight: '600', color: colors.text },
+  menuText: { flex: 1 },
+  menuTitle: { fontSize: fontSize.md, fontWeight: fontWeight.semibold, color: colors.text },
   menuSubtitle: { fontSize: fontSize.sm, color: colors.textSecondary, marginTop: 2 },
 });

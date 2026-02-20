@@ -1,145 +1,123 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList } from 'react-native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { Card } from '../../components/Card';
-import { colors, fontSize, spacing, borderRadius } from '../../theme';
+import { colors, spacing, fontSize, fontWeight, borderRadius } from '../../theme';
+import Card from '../../components/Card';
 
-type Props = {
-  navigation: NativeStackNavigationProp<any>;
-};
-
-export function AdminHomeScreen({ navigation }: Props) {
+export default function AdminHomeScreen({ navigation }: any) {
   const { allUsers, logout } = useAuth();
   const { trainingRequests, feedbacks, unreadCount } = useData();
 
   const clients = allUsers.filter(u => u.role === 'client');
   const pendingRequests = trainingRequests.filter(r => r.status === 'pending').length;
-  const recentFeedbacks = feedbacks.filter(f => {
-    const date = new Date(f.createdAt);
-    const now = new Date();
-    return (now.getTime() - date.getTime()) < 7 * 24 * 60 * 60 * 1000;
+  const recentFeedback = feedbacks.filter(f => {
+    const d = new Date(f.createdAt);
+    const week = 7 * 24 * 60 * 60 * 1000;
+    return Date.now() - d.getTime() < week;
   }).length;
 
   const stats = [
-    { label: 'Clientes', value: clients.length, icon: 'people', color: colors.accent },
-    { label: 'Solicitudes', value: pendingRequests, icon: 'document-text', color: colors.warning },
-    { label: 'Feedback', value: recentFeedbacks, icon: 'clipboard', color: colors.success },
-    { label: 'Alertas', value: unreadCount, icon: 'notifications', color: colors.error },
+    { label: 'Clientes', value: clients.length, icon: 'people' as const, color: colors.accent },
+    { label: 'Solicitudes', value: pendingRequests, icon: 'git-pull-request' as const, color: colors.warning },
+    { label: 'Feedback', value: recentFeedback, icon: 'stats-chart' as const, color: colors.success },
+    { label: 'Alertas', value: unreadCount, icon: 'notifications' as const, color: colors.error },
+  ];
+
+  const actions = [
+    { key: 'Broadcast', label: 'Difusión', icon: 'megaphone' as const, color: colors.secondary },
+    { key: 'Requests', label: 'Solicitudes', icon: 'list' as const, color: colors.warning },
+    { key: 'Feedbacks', label: 'Feedbacks', icon: 'analytics' as const, color: colors.success },
   ];
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Panel Admin</Text>
-          <Text style={styles.name}>APD Sport</Text>
+          <Text style={styles.headerTitle}>Panel Admin</Text>
+          <Text style={styles.headerSubtitle}>APD Sport</Text>
         </View>
         <TouchableOpacity onPress={logout} style={styles.logoutBtn}>
           <Ionicons name="log-out-outline" size={24} color={colors.textLight} />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.statsRow}>
-        {stats.map(stat => (
-          <Card key={stat.label} style={styles.statCard}>
-            <Ionicons name={stat.icon as any} size={24} color={stat.color} />
-            <Text style={styles.statValue}>{stat.value}</Text>
-            <Text style={styles.statLabel}>{stat.label}</Text>
-          </Card>
-        ))}
-      </View>
-
-      <View style={styles.actionsRow}>
-        <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('AdminBroadcast')}>
-          <Ionicons name="megaphone" size={28} color={colors.secondary} />
-          <Text style={styles.actionText}>Difusión</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('AdminRequests')}>
-          <Ionicons name="git-pull-request" size={28} color={colors.warning} />
-          <Text style={styles.actionText}>Solicitudes</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn} onPress={() => navigation.navigate('AdminFeedbacks')}>
-          <Ionicons name="analytics" size={28} color={colors.success} />
-          <Text style={styles.actionText}>Feedbacks</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.sectionTitle}>Clientes ({clients.length})</Text>
-
-      {clients.length === 0 ? (
-        <Card style={styles.emptyCard}>
-          <Ionicons name="people-outline" size={40} color={colors.disabled} />
-          <Text style={styles.emptyText}>Aún no tienes clientes registrados</Text>
-        </Card>
-      ) : (
-        clients.map(client => (
-          <TouchableOpacity
-            key={client.id}
-            onPress={() => navigation.navigate('AdminClientChat', { clientId: client.id, clientName: client.name })}
-            activeOpacity={0.7}
-          >
-            <Card style={styles.clientCard}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{client.name.charAt(0).toUpperCase()}</Text>
-              </View>
-              <View style={styles.clientInfo}>
-                <Text style={styles.clientName}>{client.name}</Text>
-                <Text style={styles.clientEmail}>{client.email}</Text>
-              </View>
-              <Ionicons name="chatbubble-ellipses" size={22} color={colors.accent} />
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.statsGrid}>
+          {stats.map(s => (
+            <Card key={s.label} style={styles.statCard}>
+              <Ionicons name={s.icon} size={24} color={s.color} />
+              <Text style={styles.statValue}>{s.value}</Text>
+              <Text style={styles.statLabel}>{s.label}</Text>
             </Card>
-          </TouchableOpacity>
-        ))
-      )}
-    </ScrollView>
+          ))}
+        </View>
+
+        <View style={styles.actionsRow}>
+          {actions.map(a => (
+            <TouchableOpacity key={a.key} onPress={() => navigation.navigate(a.key)} style={[styles.actionButton, { backgroundColor: a.color }]}>
+              <Ionicons name={a.icon} size={22} color={colors.textLight} />
+              <Text style={styles.actionLabel}>{a.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <Text style={styles.sectionTitle}>Clientes ({clients.length})</Text>
+        {clients.length === 0 ? (
+          <Card><Text style={styles.emptyText}>No hay clientes registrados</Text></Card>
+        ) : (
+          clients.map(client => (
+            <TouchableOpacity key={client.id} onPress={() => navigation.navigate('ClientChat', { client })} activeOpacity={0.7}>
+              <Card style={styles.clientCard}>
+                <View style={styles.clientRow}>
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>{client.name.charAt(0).toUpperCase()}</Text>
+                  </View>
+                  <View style={styles.clientInfo}>
+                    <Text style={styles.clientName}>{client.name}</Text>
+                    <Text style={styles.clientEmail}>{client.email}</Text>
+                  </View>
+                  <Ionicons name="chatbubble-outline" size={22} color={colors.accent} />
+                </View>
+              </Card>
+            </TouchableOpacity>
+          ))
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  content: { paddingBottom: spacing.xxl },
   header: {
     backgroundColor: colors.primary,
     paddingTop: 60,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.lg,
     paddingHorizontal: spacing.lg,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    borderBottomLeftRadius: borderRadius.xl,
-    borderBottomRightRadius: borderRadius.xl,
-  },
-  greeting: { fontSize: fontSize.md, color: colors.secondaryLight },
-  name: { fontSize: fontSize.xxl, fontWeight: '700', color: colors.textLight },
-  logoutBtn: { padding: spacing.sm },
-  statsRow: { flexDirection: 'row', paddingHorizontal: spacing.md, marginTop: -spacing.lg, gap: spacing.sm },
-  statCard: { flex: 1, alignItems: 'center', paddingVertical: spacing.md, paddingHorizontal: spacing.xs },
-  statValue: { fontSize: fontSize.xl, fontWeight: '800', color: colors.text, marginTop: spacing.xs },
-  statLabel: { fontSize: 10, color: colors.textSecondary, marginTop: 2 },
-  actionsRow: { flexDirection: 'row', paddingHorizontal: spacing.lg, marginTop: spacing.lg, gap: spacing.md },
-  actionBtn: {
-    flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    paddingVertical: spacing.lg,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
   },
-  actionText: { fontSize: fontSize.xs, fontWeight: '600', color: colors.text, marginTop: spacing.sm },
-  sectionTitle: { fontSize: fontSize.lg, fontWeight: '700', color: colors.text, marginHorizontal: spacing.lg, marginTop: spacing.xl, marginBottom: spacing.md },
-  emptyCard: { marginHorizontal: spacing.lg, alignItems: 'center', paddingVertical: spacing.xl },
-  emptyText: { color: colors.textSecondary, marginTop: spacing.sm },
-  clientCard: { flexDirection: 'row', alignItems: 'center', marginHorizontal: spacing.lg, marginBottom: spacing.sm },
+  headerTitle: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: colors.textLight },
+  headerSubtitle: { fontSize: fontSize.sm, color: colors.secondary },
+  logoutBtn: { padding: spacing.sm },
+  content: { flex: 1, padding: spacing.lg },
+  statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.lg },
+  statCard: { flex: 1, minWidth: '45%', alignItems: 'center', padding: spacing.md },
+  statValue: { fontSize: fontSize.xxl, fontWeight: fontWeight.bold, color: colors.text, marginTop: spacing.xs },
+  statLabel: { fontSize: fontSize.xs, color: colors.textSecondary, marginTop: 2 },
+  actionsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
+  actionButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs, padding: spacing.md, borderRadius: borderRadius.md },
+  actionLabel: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold, color: colors.textLight },
+  sectionTitle: { fontSize: fontSize.lg, fontWeight: fontWeight.bold, color: colors.text, marginBottom: spacing.md },
+  clientCard: { marginBottom: spacing.sm },
+  clientRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: colors.textLight, fontSize: fontSize.lg, fontWeight: '700' },
-  clientInfo: { flex: 1, marginLeft: spacing.md },
-  clientName: { fontSize: fontSize.md, fontWeight: '600', color: colors.text },
-  clientEmail: { fontSize: fontSize.xs, color: colors.textSecondary },
+  avatarText: { fontSize: fontSize.lg, fontWeight: fontWeight.bold, color: colors.textLight },
+  clientInfo: { flex: 1 },
+  clientName: { fontSize: fontSize.md, fontWeight: fontWeight.semibold, color: colors.text },
+  clientEmail: { fontSize: fontSize.sm, color: colors.textSecondary },
+  emptyText: { fontSize: fontSize.md, color: colors.textSecondary, textAlign: 'center', padding: spacing.lg },
 });

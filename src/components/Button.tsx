@@ -1,31 +1,27 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle } from 'react-native';
-import { colors, borderRadius, fontSize, fontWeight, spacing } from '../theme';
+import { colors, spacing, borderRadius, fontSize, fontWeight } from '../theme';
+
+type Variant = 'primary' | 'secondary' | 'outline' | 'ghost';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  variant?: Variant;
   loading?: boolean;
   disabled?: boolean;
-  style?: ViewStyle;
   fullWidth?: boolean;
+  style?: ViewStyle;
 }
 
-export function Button({ title, onPress, variant = 'primary', loading, disabled, style, fullWidth = true }: ButtonProps) {
+export default function Button({ title, onPress, variant = 'primary', loading, disabled, fullWidth, style }: ButtonProps) {
   const isDisabled = disabled || loading;
 
   return (
     <TouchableOpacity
-      style={[
-        styles.base,
-        styles[variant],
-        fullWidth && styles.fullWidth,
-        isDisabled && styles.disabled,
-        style,
-      ]}
       onPress={onPress}
       disabled={isDisabled}
+      style={[styles.base, styles[variant], fullWidth && styles.fullWidth, isDisabled && styles.disabled, style]}
       activeOpacity={0.8}
     >
       {loading ? (
@@ -39,47 +35,22 @@ export function Button({ title, onPress, variant = 'primary', loading, disabled,
 
 const styles = StyleSheet.create({
   base: {
-    paddingVertical: spacing.md,
+    minHeight: 50,
     paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     borderRadius: borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 50,
   },
-  fullWidth: {
-    width: '100%',
-  },
-  primary: {
-    backgroundColor: colors.primary,
-  },
-  secondary: {
-    backgroundColor: colors.secondary,
-  },
-  outline: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: colors.primary,
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  text: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
-  },
-  primaryText: {
-    color: colors.textLight,
-  },
-  secondaryText: {
-    color: colors.text,
-  },
-  outlineText: {
-    color: colors.primary,
-  },
-  ghostText: {
-    color: colors.primary,
-  },
+  primary: { backgroundColor: colors.primary },
+  secondary: { backgroundColor: colors.secondary },
+  outline: { backgroundColor: 'transparent', borderWidth: 2, borderColor: colors.primary },
+  ghost: { backgroundColor: 'transparent' },
+  fullWidth: { width: '100%' },
+  disabled: { opacity: 0.5 },
+  text: { fontSize: fontSize.md, fontWeight: fontWeight.semibold },
+  primaryText: { color: colors.textLight },
+  secondaryText: { color: colors.text },
+  outlineText: { color: colors.primary },
+  ghostText: { color: colors.primary },
 });

@@ -1,12 +1,9 @@
-export type UserRole = 'admin' | 'client';
-
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: UserRole;
+  role: 'admin' | 'client';
   phone?: string;
-  avatarUrl?: string;
   createdAt: string;
   onboardingCompleted: boolean;
 }
@@ -32,7 +29,7 @@ export interface TrainingModificationRequest {
   reason: string;
   injuryOrPain: boolean;
   injuryDetails?: string;
-  preferredSchedule: string;
+  preferredSchedule?: string;
   additionalNotes?: string;
   status: 'pending' | 'reviewed' | 'approved' | 'rejected';
   createdAt: string;
@@ -43,21 +40,21 @@ export interface WeeklyFeedback {
   clientId: string;
   clientName: string;
   weekNumber: number;
-  trainingAdherence: number; // 1-10
-  nutritionAdherence: number; // 1-10
-  energyLevel: number; // 1-10
-  sleepQuality: number; // 1-10
-  stressLevel: number; // 1-10
-  weight?: number;
+  trainingAdherence: number;
+  nutritionAdherence: number;
+  energyLevel: number;
+  sleepQuality: number;
+  stressLevel: number;
+  weight?: string;
   bodyMeasurements?: string;
   difficulties: string;
-  achievements: string;
-  questionsForCoach: string;
+  achievements?: string;
+  questionsForCoach?: string;
   overallFeeling: string;
   createdAt: string;
 }
 
-export interface Notification {
+export interface AppNotification {
   id: string;
   type: 'message' | 'feedback' | 'training_request' | 'broadcast';
   title: string;
@@ -75,7 +72,7 @@ export interface OnboardingData {
   weight: string;
   goal: string;
   activityLevel: string;
-  dietaryRestrictions: string;
-  medicalConditions: string;
-  previousExperience: string;
+  dietaryRestrictions?: string;
+  medicalConditions?: string;
+  previousExperience?: string;
 }

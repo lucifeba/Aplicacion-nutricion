@@ -1,7 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import { colors } from '../theme';
 
-// Configure notification handling
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -23,7 +23,6 @@ export async function registerForPushNotifications(): Promise<string | null> {
     }
 
     if (finalStatus !== 'granted') {
-      console.log('Push notification permission not granted');
       return null;
     }
 
@@ -32,26 +31,20 @@ export async function registerForPushNotifications(): Promise<string | null> {
         name: 'APD Sport',
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#1B2A4A',
+        lightColor: colors.primary,
       });
     }
 
-    const token = (await Notifications.getExpoPushTokenAsync()).data;
-    return token;
-  } catch (error) {
-    console.error('Error registering for push notifications:', error);
+    const token = await Notifications.getExpoPushTokenAsync();
+    return token.data;
+  } catch {
     return null;
   }
 }
 
 export async function sendLocalNotification(title: string, body: string, data?: Record<string, string>) {
   await Notifications.scheduleNotificationAsync({
-    content: {
-      title,
-      body,
-      data: data || {},
-      sound: 'default',
-    },
-    trigger: null, // Immediate
+    content: { title, body, data },
+    trigger: null,
   });
 }

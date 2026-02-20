@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, Modal } from 'react-native';
+import { Modal, View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, borderRadius, fontSize, spacing } from '../theme';
-import { Button } from './Button';
+import { colors, spacing, borderRadius, fontSize, fontWeight } from '../theme';
+import Button from './Button';
 
 interface SuccessModalProps {
   visible: boolean;
@@ -11,17 +11,17 @@ interface SuccessModalProps {
   onClose: () => void;
 }
 
-export function SuccessModal({ visible, title, message, onClose }: SuccessModalProps) {
+export default function SuccessModal({ visible, title, message, onClose }: SuccessModalProps) {
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.modal}>
           <View style={styles.iconContainer}>
-            <Ionicons name="checkmark-circle" size={64} color={colors.success} />
+            <Ionicons name="checkmark-circle" size={60} color={colors.success} />
           </View>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
-          <Button title="Aceptar" onPress={onClose} style={{ marginTop: spacing.lg }} />
+          <Button title="Aceptar" onPress={onClose} fullWidth />
         </View>
       </View>
     </Modal>
@@ -29,13 +29,7 @@ export function SuccessModal({ visible, title, message, onClose }: SuccessModalP
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: spacing.lg,
-  },
+  overlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'center', alignItems: 'center', padding: spacing.lg },
   modal: {
     backgroundColor: colors.surface,
     borderRadius: borderRadius.xl,
@@ -44,20 +38,7 @@ const styles = StyleSheet.create({
     maxWidth: 340,
     alignItems: 'center',
   },
-  iconContainer: {
-    marginBottom: spacing.md,
-  },
-  title: {
-    fontSize: fontSize.xl,
-    fontWeight: '700',
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  message: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
+  iconContainer: { marginBottom: spacing.md },
+  title: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: colors.text, marginBottom: spacing.sm, textAlign: 'center' },
+  message: { fontSize: fontSize.md, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.lg, lineHeight: 22 },
 });

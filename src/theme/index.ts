@@ -1,6 +1,4 @@
-import { colors } from './colors';
-
-export { colors };
+export { colors } from './colors';
 
 export const spacing = {
   xs: 4,
